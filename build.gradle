@@ -29,7 +29,7 @@ description = 'demo20230418'
 sourceCompatibility = '11'
 
 task generateKogitoWithMaven(type: Exec) {
-    commandLine "mvn", "clean", "compile"
+    commandLine "./mvnw", "clean", "compile"
 }
 
 compileJava.dependsOn generateKogitoWithMaven

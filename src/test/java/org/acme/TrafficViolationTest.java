@@ -18,20 +18,26 @@ package org.acme;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
 
-import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.junit4.SpringRunner;
+
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = KogitoApplication.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD) // reset spring context after each test method
 public class TrafficViolationTest {
+    private static final Logger LOG = LoggerFactory.getLogger(TrafficViolationTest.class);
+    static {
+        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+    }
 
     @LocalServerPort
     private int port;
@@ -39,7 +45,7 @@ public class TrafficViolationTest {
     @Test
     public void testEvaluateTrafficViolation() {
         RestAssured.port = port;
-        given()
+        String result = given()
                .body("{\n" +
                      "    \"Driver\": {\n" +
                      "        \"Points\": 2\n" +
@@ -55,6 +61,9 @@ public class TrafficViolationTest {
                .post("/Traffic Violation")
           .then()
              .statusCode(200)
-               .body("'Should the driver be suspended?'", is("No"));
+               .body("'Should the driver be suspended?'", is("No"))
+               .extract()
+               .asString();
+        LOG.info("the REST call result is: {}", result);
     }
 }
